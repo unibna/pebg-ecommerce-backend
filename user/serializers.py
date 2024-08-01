@@ -84,17 +84,22 @@ class UserRoleSerializer(serializers.ModelSerializer):
         exclude = ['user']
 
 
-class UserRoleCreateUpdateSerializer(serializers.ModelSerializer):
+class UserRoleCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
-        fields = ['role']
+        fields = ('role',)
 
     def create(self, validated_data):
         user = self.context['request'].user
         return UserRole.objects.create(user=user, **validated_data)
 
+
+class UserRoleUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserRole
+        fields = ('is_enabled',)
+
     def update(self, instance, validated_data):
-        instance.role = validated_data.get('role', instance.role)
+        instance.is_enabled = validated_data.get('is_enabled', instance.is_enabled)
         instance.save()
         return instance
-

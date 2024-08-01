@@ -15,7 +15,9 @@ urlpatterns = [
     path('users/<int:user_id>/roles/', views.UserRoleViewSet.as_view({
         'get': 'list',
         'post': 'create',
-        'put': 'update', 
-        'delete': 'destroy'
+    }), name='user-roles'),
+    path('users/<int:user_id>/roles/<int:pk>/', views.UserRoleViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
     }), name='user-roles'),
 ]

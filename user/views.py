@@ -1,4 +1,5 @@
 
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
@@ -13,7 +14,8 @@ from .serializers import (
     UserCreateSerializer,
     UserUpdateSerializer,
     UserRoleSerializer,
-    UserRoleCreateUpdateSerializer,
+    UserRoleCreateSerializer,
+    UserRoleUpdateSerializer
 )
 from .permissions import IsSelfOrReadOnly
 
@@ -74,23 +76,20 @@ class UserRoleViewSet(viewsets.ModelViewSet):
     queryset = UserRole.objects.all()
     serializer_class = UserRoleSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated, IsSelfOrReadOnly)
-    
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'pk'
+
     def get_queryset(self):
         user_id = self.kwargs.get('user_id')
         if user_id:
             return UserRole.objects.filter(user_id=user_id)
         return UserRole.objects.all()
 
-    # def get_queryset(self):
-    #     user_id = self.kwargs.get('user_id')
-    #     if user_id:
-    #         return UserRole.objects.filter(user_id=user_id)
-    #     return UserRole.objects.all()
-
     def get_serializer_class(self):
-        if self.action in ['create', 'update', 'partial_update']:
-            return UserRoleCreateUpdateSerializer
+        if self.action in ['create']:
+            return UserRoleCreateSerializer
+        if self.action in ['update', 'partial_update']:
+            return UserRoleUpdateSerializer
         return UserRoleSerializer
 
     def perform_create(self, serializer):
