@@ -13,6 +13,7 @@ from .serializers import (
     UserCreateSerializer,
     UserUpdateSerializer,
     UserRoleSerializer,
+    UserRoleCreateUpdateSerializer,
 )
 from .permissions import IsSelfOrReadOnly
 
@@ -72,3 +73,28 @@ class UserViewSet(viewsets.ModelViewSet):
 class UserRoleViewSet(viewsets.ModelViewSet):
     queryset = UserRole.objects.all()
     serializer_class = UserRoleSerializer
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated, IsSelfOrReadOnly)
+    
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        if user_id:
+            return UserRole.objects.filter(user_id=user_id)
+        return UserRole.objects.all()
+
+    # def get_queryset(self):
+    #     user_id = self.kwargs.get('user_id')
+    #     if user_id:
+    #         return UserRole.objects.filter(user_id=user_id)
+    #     return UserRole.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return UserRoleCreateUpdateSerializer
+        return UserRoleSerializer
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def perform_update(self, serializer):
+        serializer.save()
