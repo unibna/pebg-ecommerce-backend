@@ -1,5 +1,3 @@
-
-from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
@@ -7,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 
-from .models import User, UserRole
+from .models import User, UserRole, UserDepartment
 from .serializers import (
     UserActivationSerializer,
     UserSerializer,
@@ -15,7 +13,10 @@ from .serializers import (
     UserUpdateSerializer,
     UserRoleSerializer,
     UserRoleCreateSerializer,
-    UserRoleUpdateSerializer
+    UserRoleUpdateSerializer,
+    UserDepartmentSerializer,
+    UserDepartmentCreateSerializer,
+    UserDepartmentUpdateSerializer
 )
 from .permissions import IsSelfOrReadOnly
 
@@ -91,6 +92,33 @@ class UserRoleViewSet(viewsets.ModelViewSet):
         if self.action in ['update', 'partial_update']:
             return UserRoleUpdateSerializer
         return UserRoleSerializer
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+
+class UserDepartmentViewSet(viewsets.ModelViewSet):
+    queryset = UserDepartment.objects.all()
+    serializer_class = UserDepartmentSerializer
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        if user_id:
+            return UserDepartment.objects.filter(user_id=user_id)
+        return UserDepartment.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in ['create']:
+            return UserDepartmentCreateSerializer
+        if self.action in ['update', 'partial_update']:
+            return UserDepartmentUpdateSerializer
+        return UserDepartmentSerializer
 
     def perform_create(self, serializer):
         serializer.save()

@@ -2,8 +2,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from .models import User, UserRole
-from .enums import UserRoleEnum
+from .models import User, UserRole, UserDepartment
 
 
 class UserActivationSerializer(serializers.Serializer):
@@ -97,6 +96,33 @@ class UserRoleCreateSerializer(serializers.ModelSerializer):
 class UserRoleUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
+        fields = ('is_enabled',)
+
+    def update(self, instance, validated_data):
+        instance.is_enabled = validated_data.get('is_enabled', instance.is_enabled)
+        instance.save()
+        return instance
+
+
+class UserDepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDepartment
+        exclude = ['user']
+        
+        
+class UserDepartmentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDepartment
+        fields = ('department',)
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        return UserDepartment.objects.create(user=user, **validated_data)
+
+
+class UserDepartmentUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDepartment
         fields = ('is_enabled',)
 
     def update(self, instance, validated_data):

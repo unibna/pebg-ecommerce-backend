@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
     # internal
     'user',
+    'department',
 
     # 3rd libs
     'rest_framework',

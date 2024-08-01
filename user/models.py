@@ -38,3 +38,15 @@ class UserRole(BaseModel):
 
     def __str__(self):
         return self.role.value
+
+
+class UserDepartment(BaseModel):
+    is_enabled = models.BooleanField(default=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='departments')
+    department = models.ForeignKey('department.Department', on_delete=models.CASCADE, related_name='users')
+
+    class Meta:
+        unique_together = ('user', 'department')
+
+    def __str__(self):
+        return self.department.name
