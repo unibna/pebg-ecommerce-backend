@@ -1,5 +1,8 @@
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 from enumfields import EnumField
 
 from base.models import BaseModel
@@ -13,9 +16,16 @@ class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=False)
+    activation_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    activated_time = models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+    
+    def activate(self):
+        self.is_active = True
+        self.activated_time = timezone.now()
+        self.save()
 
 
 class UserRole(BaseModel):
