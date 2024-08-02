@@ -18,13 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 
 from . import settings
-from .api.health_check import health_check
-
+from .api.health_check import health_check, TestAPIView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health-check/', health_check, name='health_check'),
+    path('test/', TestAPIView.as_view(), name='test'),
     path('api/', include("src.api_urls")),
 ]
 

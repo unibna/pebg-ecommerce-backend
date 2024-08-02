@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Category
+from .models import Category, Product
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -31,4 +31,39 @@ class CategoryCreateUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
+class ProductSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Product
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+        }
+        
+    def create(self, validated_data):
+        product = Product.objects.create(**validated_data)
+        return product
+
+
+class ProductUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'name': {'required': False},
+            'category': {'required': False},
+            'description': {'required': False},
+            'price': {'required': False},
+            'stock': {'required': False},
+        }
+    
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.category = validated_data.get('category', instance.category)
+        instance.description = validated_data.get('description', instance.description)
+        instance.price = validated_data.get('price', instance.price)
+        instance.stock = validated_data.get('stock', instance.stock)
+        instance.save()
+        return instance
 
