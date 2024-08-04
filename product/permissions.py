@@ -1,28 +1,37 @@
 from rest_framework.permissions import BasePermission
 
-from department.models import Department
-from user.enums import UserRoleEnum
-from user.models import UserRole, UserDepartment
+from .models import Product, Category
+from user.models import UserDepartment
 
 
 class IsStaffInOwnDepartment(BasePermission):
     
-    def has_permission(self, request, view):
-        if not UserRole.objects.filter(
-            is_enabled=True,
-            role=UserRoleEnum.STAFF.value,
+    def has_object_permission(self, request, view, obj):
+        obj_department = None
+        if isinstance(obj, Category):
+            obj_department = obj.department
+        elif isinstance(obj, Product):
+            obj_department = obj.category.department
+            
+        print("-----> permission", UserDepartment.objects.filter(
             user=request.user,
-        ).exists():
-            return False
+            department=obj_department,
+            is_enabled=True
+        ).exists())
 
-        if not Department.objects.filter(
-            user_department__user=request.user,
-        ):
-            return False    
-        
-        if request.user.groups.filter(name='staff').exists():
-            user_department = getattr(request.user, 'user_department', None)
-            if user_department:
-                department = user_department.department
-                return True
+        return UserDepartment.objects.filter(
+            user=request.user,
+            department=obj_department,
+            is_enabled=True
+        ).exists() if obj_department else False
+
+
+def isUserAndCategoryInTheSameDepartment(user, category):
+    try:
+        return UserDepartment.objects.filter(
+            user=user,
+            department=category.department,
+            is_enabled=True
+        ).exists()
+    except:
         return False

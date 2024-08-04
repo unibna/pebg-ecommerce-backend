@@ -9,7 +9,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CategoryCreateUpdateSerializer(serializers.ModelSerializer):
+class CategoryCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('id', 'name', 'description', 'department')
@@ -22,6 +22,17 @@ class CategoryCreateUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         category = Category.objects.create(**validated_data)
         return category
+
+
+class CategoryUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id', 'name', 'description', 'department')
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'name': {'required': False},
+            'department': {'required': False}
+        }
     
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
