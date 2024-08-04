@@ -41,8 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # internal
-    'product',
+    'cart',
     'department',
+    'product',
     'user',
 
     # 3rd libs
