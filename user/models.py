@@ -57,3 +57,12 @@ class UserDepartment(BaseModel):
 
     def __str__(self):
         return self.department.name
+    
+    def save(self, *args, **kwargs):
+        if self.is_enabled:
+            UserDepartment.objects.filter(
+                user=self.user
+            ).update(
+                is_enabled=False
+            )
+        super().save(*args, **kwargs)
