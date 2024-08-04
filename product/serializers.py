@@ -27,17 +27,22 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
 class CategoryUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('id', 'name', 'description', 'department')
+        fields = '__all__'
         extra_kwargs = {
             'id': {'read_only': True},
+            'created_at': {'read_only': True},
+            'updated_at': {'read_only': True},
             'name': {'required': False},
-            'department': {'required': False}
+            'description': {'required': False},
+            'department': {'required': False},
+            'is_enabled': {'required': False},
         }
     
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
         instance.description = validated_data.get('description', instance.description)
         instance.department = validated_data.get('department', instance.department)
+        instance.is_enabled = validated_data.get('is_enabled', instance.is_enabled)
         instance.save()
         return instance
 
@@ -62,11 +67,14 @@ class ProductUpdateSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             'id': {'read_only': True},
+            'created_at': {'read_only': True},
+            'updated_at': {'read_only': True},
             'name': {'required': False},
             'category': {'required': False},
             'description': {'required': False},
             'price': {'required': False},
             'stock': {'required': False},
+            'is_enabled': {'required': False},
         }
     
     def update(self, instance, validated_data):
@@ -75,6 +83,7 @@ class ProductUpdateSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get('description', instance.description)
         instance.price = validated_data.get('price', instance.price)
         instance.stock = validated_data.get('stock', instance.stock)
+        instance.is_enabled = validated_data.get('is_enabled', instance.is_enabled)
         instance.save()
         return instance
 
