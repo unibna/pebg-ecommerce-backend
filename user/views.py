@@ -1,5 +1,5 @@
 from rest_framework import status, viewsets
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from .models import User, UserRole, UserDepartment
 from .serializers import (
+    MeSerializer,
     UserActivationSerializer,
     UserSerializer,
     UserCreateSerializer,
@@ -19,6 +20,15 @@ from .serializers import (
     UserDepartmentUpdateSerializer
 )
 from .permissions import IsSelfOrReadOnly
+
+
+class MeAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = MeSerializer(request.user)
+        return Response(serializer.data)
 
 
 class UserActivateAPIView(APIView):
@@ -45,8 +55,7 @@ class UserActivateAPIView(APIView):
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated, IsSelfOrReadOnly)
+    authentication_classes = [JWTAuthentication]
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -58,7 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             return [AllowAny()]
-        return [IsAuthenticated()]
+        return [IsSelfOrReadOnly()]
     
     def get_queryset(self):
         return User.objects.filter(id=self.request.user.id)
@@ -68,23 +77,20 @@ class UserViewSet(viewsets.ModelViewSet):
         if obj != self.request.user:
             raise PermissionDenied("You do not have permission to access this resource.")
         return obj
-
+    
     def perform_update(self, serializer):
         serializer.save()
-    
+
 
 class UserRoleViewSet(viewsets.ModelViewSet):
     queryset = UserRole.objects.all()
     serializer_class = UserRoleSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsSelfOrReadOnly)
     lookup_field = 'pk'
-
+    
     def get_queryset(self):
-        user_id = self.kwargs.get('user_id')
-        if user_id:
-            return UserRole.objects.filter(user_id=user_id)
-        return UserRole.objects.all()
+        return UserRole.objects.filter(user_id=self.request.user.id)
 
     def get_serializer_class(self):
         if self.action in ['create']:
@@ -92,8 +98,14 @@ class UserRoleViewSet(viewsets.ModelViewSet):
         if self.action in ['update', 'partial_update']:
             return UserRoleUpdateSerializer
         return UserRoleSerializer
-
+    
     def perform_create(self, serializer):
+        user = self.request.user
+        role = serializer.validated_data.get('role')
+
+        if UserRole.objects.filter(user=user, role=role).exists():
+            raise ValidationError({"detail": "User already assigned to this role."})
+        
         serializer.save()
 
     def perform_update(self, serializer):
@@ -108,10 +120,7 @@ class UserDepartmentViewSet(viewsets.ModelViewSet):
     lookup_field = 'pk'
 
     def get_queryset(self):
-        user_id = self.kwargs.get('user_id')
-        if user_id:
-            return UserDepartment.objects.filter(user_id=user_id)
-        return UserDepartment.objects.all()
+        return UserDepartment.objects.filter(user=self.request.user)
 
     def get_serializer_class(self):
         if self.action in ['create']:
@@ -121,6 +130,12 @@ class UserDepartmentViewSet(viewsets.ModelViewSet):
         return UserDepartmentSerializer
 
     def perform_create(self, serializer):
+        user = self.request.user
+        department = serializer.validated_data.get('department')
+
+        if UserDepartment.objects.filter(user=user, department=department).exists():
+            raise ValidationError({"detail": "User already assigned to this department."})
+        
         serializer.save()
 
     def perform_update(self, serializer):

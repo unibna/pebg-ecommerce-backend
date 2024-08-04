@@ -5,30 +5,17 @@ from . import views
 
 
 router = DefaultRouter()
+router.register(r'users/roles', views.UserRoleViewSet)
+router.register(r'users/departments', views.UserDepartmentViewSet)
 router.register(r'users', views.UserViewSet)
 
 
 urlpatterns = [
     path('', include(router.urls)),
+    
+    path('me/', views.MeAPIView.as_view(), name='me'),
     path('activate/', views.UserActivateAPIView.as_view(), name='activate-account'),
-    
-    # User roles
-    path('users/<int:user_id>/roles/', views.UserRoleViewSet.as_view({
-        'get': 'list',
-        'post': 'create',
-    }), name='user-roles'),
-    path('users/<int:user_id>/roles/<int:pk>/', views.UserRoleViewSet.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-    }), name='user-roles'),
-    
-    # User departments
-    path('users/<int:user_id>/departments/', views.UserDepartmentViewSet.as_view({
-        'get': 'list',
-        'post': 'create',
-    }), name='user-departments'),
-    path('users/<int:user_id>/departments/<int:pk>/', views.UserDepartmentViewSet.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-    }), name='user-departments'),
+    path('register/', views.UserViewSet.as_view({
+            'post': 'create',
+        }), name='register'),
 ]

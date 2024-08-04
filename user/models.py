@@ -38,6 +38,13 @@ class UserRole(BaseModel):
 
     def __str__(self):
         return self.role.value
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.role == UserRoleEnum.STAFF and self.is_enabled:
+            self.user.is_staff = True
+            self.user.save()
 
 
 class UserDepartment(BaseModel):

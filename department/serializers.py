@@ -8,7 +8,9 @@ class DepartmentSerializer(serializers.ModelSerializer):
         model = Department
         fields = ('id', 'name', 'description')
         extra_kwargs = {
-            'id': {'read_only': True}
+            'id': {'read_only': True},
+            'name': {'required': False},
+            'description': {'required': False},
         }
         
     def create(self, validated_data):

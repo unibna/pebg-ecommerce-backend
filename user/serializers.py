@@ -1,8 +1,15 @@
+
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from .models import User, UserRole, UserDepartment
+
+
+class MeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = ('password', 'activation_token')
 
 
 class UserActivationSerializer(serializers.Serializer):
@@ -28,26 +35,25 @@ class UserCreateSerializer(serializers.ModelSerializer):
         ]
     )
     password = serializers.CharField(
-        required=True, validators=[validate_password])
-    password2 = serializers.CharField(required=True)
+        write_only=True, required=True, validators=[validate_password])
+    password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
         fields = ('id', 'email', 'password', 'password2', 'first_name', 'last_name')
         extra_kwargs = {
             'id': {'read_only': True},
-            'password': {'write_only': True},
-            'password2': {'write_only': True}
         }
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError(
                 {"password": "Password fields didn't match."})
-        attrs.pop('password2')
         return attrs
 
     def create(self, validated_data):
+        if 'password2' in validated_data:
+            validated_data.pop('password2')
         user = User.objects.create_user(**validated_data)
         return user
 
@@ -77,7 +83,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class UserRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
-        # fields = '__all__'
         exclude = ['user']
 
 
@@ -88,7 +93,8 @@ class UserRoleCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        return UserRole.objects.create(user=user, **validated_data)
+        user_role = UserRole.objects.create(user=user, **validated_data)
+        return user_role
 
 
 class UserRoleUpdateSerializer(serializers.ModelSerializer):
