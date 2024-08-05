@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'membership',
     'order',
     'product',
+    'promotion',
     'user',
 
     # 3rd libs

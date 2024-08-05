@@ -60,7 +60,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                     )
                 )
             models.OrderItem.objects.bulk_create(new_order_items_batch)
-            order.update_total_amount()
+            order.update_origin_total_amount()
+            order.apply_promotions()
 
         serializer = serializers.OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -143,4 +144,4 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     
     def perform_update(self, serializer):
         instance = serializer.save()
-        instance.order.update_total_amount()
+        instance.order.update_origin_total_amount()

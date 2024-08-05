@@ -69,13 +69,24 @@ class ProductViewSet(viewsets.ModelViewSet):
     lookup_field = 'pk'
     
     def get_queryset(self):
-        user_department = UserDepartment.objects.filter(
-            user=self.request.user,
-            is_enabled=True
-        ).first()
-        return Product.objects.filter(
-            category__department=user_department.department.id
-        ) if user_department else Product.objects.none()
+        if self.request.user.is_staff:
+            user_department = UserDepartment.objects.filter(
+                user=self.request.user,
+                is_enabled=True
+            ).first()
+            return Product.objects.filter(
+                category__department=user_department.department.id
+            ) if user_department else Product.objects.none()
+        else:
+            return Product.objects.filter(is_enabled=True)
+        
+    def get_permissions(self):
+        if self.request.user.is_staff:
+            return (IsAuthenticated(), IsStaffInOwnDepartment())
+        else:
+            if self.action in ['create', 'update', 'partial_update']:
+                raise PermissionDenied()
+            return (IsAuthenticated(),)
 
     def get_serializer_class(self):
         if self.action in ['update', 'partial_update']:
