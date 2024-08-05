@@ -12,12 +12,6 @@ class IsStaffInOwnDepartment(BasePermission):
             obj_department = obj.department
         elif isinstance(obj, Product):
             obj_department = obj.category.department
-            
-        print("-----> permission", UserDepartment.objects.filter(
-            user=request.user,
-            department=obj_department,
-            is_enabled=True
-        ).exists())
 
         return UserDepartment.objects.filter(
             user=request.user,
