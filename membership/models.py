@@ -16,3 +16,10 @@ class Membership(BaseModel):
     is_enabled = models.BooleanField(default=True)
     rules = models.JSONField(default=dict)
     benefits = models.JSONField(default=dict)
+    next_membership = models.ForeignKey(
+        'self', 
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='previous_memberships'
+    )

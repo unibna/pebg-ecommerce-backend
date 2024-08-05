@@ -66,3 +66,18 @@ class UserDepartment(BaseModel):
                 is_enabled=False
             )
         super().save(*args, **kwargs)
+
+
+class UserMembership(BaseModel):
+    is_enabled = models.BooleanField(default=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='membership')
+    membership = models.ForeignKey(
+        'membership.Membership',
+        on_delete=models.CASCADE,
+        related_name='users',
+        null=True,
+        blank=True,
+    )
+    
+    class Meta:
+        unique_together = ('user',)

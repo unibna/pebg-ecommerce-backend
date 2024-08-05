@@ -104,8 +104,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['put'])
     def complete(self, request, pk=None):
         order = self.get_object()
-        if order.status != models.enums.OrderStatusEnum.DELIVERING:
-            raise PermissionDenied('Cannot update order')
+        # if order.status != models.enums.OrderStatusEnum.DELIVERING:
+        #     raise PermissionDenied('Cannot update order')
         order.status = models.enums.OrderStatusEnum.COMPLETED
         order.save()
         serializer = serializers.OrderSerializer(order)

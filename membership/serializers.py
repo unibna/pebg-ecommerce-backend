@@ -4,9 +4,16 @@ from .models import Membership
 
 
 class MembershipSerializer(serializers.ModelSerializer):
+    next_membership = serializers.SerializerMethodField()
+
     class Meta:
         model = Membership
         fields = '__all__'
+        
+    def get_next_membership(self, obj):
+        if obj.next_membership:
+            return MembershipSerializer(obj.next_membership).data
+        return None
 
 
 class MembershipUpdateSerializer(serializers.ModelSerializer):
@@ -22,6 +29,7 @@ class MembershipUpdateSerializer(serializers.ModelSerializer):
             'benefits': {'required': False},
             'type': {'required': False},
             'name': {'required': False},
+            'next_membership': {'required': False},
         }
         
     def update(self, instance, validated_data):
@@ -30,5 +38,6 @@ class MembershipUpdateSerializer(serializers.ModelSerializer):
         instance.benefits = validated_data.get('benefits', instance.benefits)
         instance.type = validated_data.get('type', instance.type)
         instance.name = validated_data.get('name', instance.name)
+        instance.next_membership = validated_data.get('next_membership', instance.next_membership)
         instance.save()
         return instance

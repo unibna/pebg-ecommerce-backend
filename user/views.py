@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 
-from .models import User, UserRole, UserDepartment
+from .models import User, UserRole, UserDepartment, UserMembership
 from .serializers import (
     MeSerializer,
     UserActivationSerializer,
@@ -17,9 +17,10 @@ from .serializers import (
     UserRoleUpdateSerializer,
     UserDepartmentSerializer,
     UserDepartmentCreateSerializer,
-    UserDepartmentUpdateSerializer
+    UserDepartmentUpdateSerializer,
+    UserMembershipSerializer,
 )
-from .permissions import IsSelfOrReadOnly
+from .permissions import IsSelfOrReadOnly, IsStaff
 
 
 class MeAPIView(APIView):
@@ -140,3 +141,19 @@ class UserDepartmentViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save()
+
+
+class UserMembershipViewSet(viewsets.ModelViewSet):
+    queryset = UserMembership.objects.all()
+    serializer_class = UserMembershipSerializer
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'pk'
+    
+    def get_queryset(self):
+        return UserMembership.objects.filter(user=self.request.user)
+    
+    def get_permission(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            raise PermissionDenied("Method not allowed.")
+        return super().get_permissions()

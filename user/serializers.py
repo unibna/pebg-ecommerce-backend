@@ -3,13 +3,8 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from .models import User, UserRole, UserDepartment
-
-
-class MeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        exclude = ('password', 'activation_token')
+from .models import User, UserRole, UserDepartment, UserMembership
+from membership.serializers import MembershipSerializer
 
 
 class UserActivationSerializer(serializers.Serializer):
@@ -133,3 +128,24 @@ class UserDepartmentUpdateSerializer(serializers.ModelSerializer):
         instance.is_enabled = validated_data.get('is_enabled', instance.is_enabled)
         instance.save()
         return instance
+
+
+class UserMembershipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserMembership
+        exclude = ['user']
+
+
+class MeSerializer(serializers.ModelSerializer):
+    membership = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        exclude = ('password', 'activation_token')
+        
+    def get_membership(self, obj):
+        try:
+            user_membership = obj.membership.get()
+            return MembershipSerializer(user_membership.membership).data
+        except UserMembership.DoesNotExist:
+            return None
