@@ -23,10 +23,11 @@ class IsSelfOrReadOnly(permissions.BasePermission):
 class IsStaff(permissions.BasePermission):
     
     def has_permission(self, request, view):
-        if not UserRole.objects.filter(
+        print("-----> check permission")
+        if UserRole.objects.filter(
             is_enabled=True,
             role=UserRoleEnum.STAFF.value,
             user=request.user,
         ).exists():
-            return False
-        return True
+            return True
+        return False
