@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Order, OrderItem
+from .enums import OrderStatusEnum
 
 
 class OrderItemSerializer(serializers.ModelSerializer):

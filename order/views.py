@@ -1,10 +1,12 @@
 from django.db import transaction
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
 
 from . import models, serializers
 from cart.models import CartItem
@@ -15,15 +17,13 @@ class OrderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = models.Order.objects.all()
     serializer_class = serializers.OrderSerializer
-    
+
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
 
     def get_permissions(self):
-        if self.action in ['update', 'partial_update']:
-            raise NotFound()
         return super().get_permissions()
-    
+
     def create(self, request, *args, **kwargs):
         cart_item_ids = request.data.get('cart_items', [])
         validated_cart_items = CartItem.objects.filter(
@@ -41,6 +41,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         ).first()
         with transaction.atomic():
             if order:
+                if order.status != models.enums.OrderStatusEnum.DRAFT:
+                    raise PermissionDenied('Cannot create order')
+
                 models.OrderItem.objects.filter(order=order).delete()
                 serializers.OrderSerializer(order, )
             else:
@@ -61,6 +64,16 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         serializer = serializers.OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['put'])
+    def checkout(self, request, pk=None):
+        order = self.get_object()
+        if order.status != models.enums.OrderStatusEnum.DRAFT:
+            raise PermissionDenied('Cannot update order')
+        order.status = models.enums.OrderStatusEnum.PAYMENT_COMPLETED
+        order.save()
+        serializer = serializers.OrderSerializer(order)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def items(self, request, pk=None):
