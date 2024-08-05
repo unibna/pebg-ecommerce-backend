@@ -34,6 +34,23 @@ class MeAPIView(APIView):
 
 class UserActivateAPIView(APIView):
     permission_classes = [AllowAny]
+    
+    def get(self, request):
+        activation_token = request.query_params.get('token')
+        try:
+            user = User.objects.get(activation_token=activation_token, is_active=False)
+            user.activate()
+            return Response(
+                {'detail': 'Account activated successfully.'},
+                status=status.HTTP_200_OK
+            )
+        except User.DoesNotExist:
+            return Response(
+                {'detail': 'Invalid activation token.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        return Response({'detail': 'Account activated successfully.'}, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = UserActivationSerializer(data=request.data)
@@ -60,7 +77,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == 'create':
-            return UserCreateSerializer
+            raise PermissionDenied("Method not allowed.")
         elif self.action == 'update':
             return UserUpdateSerializer
         return UserSerializer
@@ -69,7 +86,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [AllowAny()]
         return [IsSelfOrReadOnly()]
-    
+
     def get_queryset(self):
         return User.objects.filter(id=self.request.user.id)
     
@@ -81,6 +98,17 @@ class UserViewSet(viewsets.ModelViewSet):
     
     def perform_update(self, serializer):
         serializer.save()
+        
+        
+class RegisterAPIView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = UserCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserRoleViewSet(viewsets.ModelViewSet):
