@@ -65,6 +65,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = serializers.OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=['get'])
+    def items(self, request, pk=None):
+        order = self.get_object()
+        serializer = serializers.OrderItemSerializer(order.order_items.all(), many=True)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['put'])
     def checkout(self, request, pk=None):
         order = self.get_object()
@@ -75,10 +81,44 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = serializers.OrderSerializer(order)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['get'])
-    def items(self, request, pk=None):
+    @action(detail=True, methods=['put'])
+    def process(self, request, pk=None):
         order = self.get_object()
-        serializer = serializers.OrderItemSerializer(order.order_items.all(), many=True)
+        if order.status != models.enums.OrderStatusEnum.PAYMENT_COMPLETED:
+            raise PermissionDenied('Cannot update order')
+        order.status = models.enums.OrderStatusEnum.PROCESSING
+        order.save()
+        serializer = serializers.OrderSerializer(order)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['put'])
+    def deliver(self, request, pk=None):
+        order = self.get_object()
+        if order.status != models.enums.OrderStatusEnum.PROCESSING:
+            raise PermissionDenied('Cannot update order')
+        order.status = models.enums.OrderStatusEnum.DELIVERING
+        order.save()
+        serializer = serializers.OrderSerializer(order)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['put'])
+    def complete(self, request, pk=None):
+        order = self.get_object()
+        if order.status != models.enums.OrderStatusEnum.DELIVERING:
+            raise PermissionDenied('Cannot update order')
+        order.status = models.enums.OrderStatusEnum.COMPLETED
+        order.save()
+        serializer = serializers.OrderSerializer(order)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['put'])
+    def cancel(self, request, pk=None):
+        order = self.get_object()
+        if order.status != models.enums.OrderStatusEnum.COMPLETED:
+            raise PermissionDenied('Cannot update order')
+        order.status = models.enums.OrderStatusEnum.CANCELED
+        order.save()
+        serializer = serializers.OrderSerializer(order)
         return Response(serializer.data)
 
 
