@@ -17,7 +17,7 @@ class PromotionViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
 
     def get_queryset(self):
-        return models.Promotion.objects.filter()
+        return models.Promotion.objects.filter().order_by('-id')
     
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:

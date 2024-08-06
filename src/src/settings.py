@@ -29,27 +29,29 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*", "http://localhost:3000"]
 
-CORS_ORIGIN_ALLOW_ALL=True
+CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOWED_ORIGINS = [
-    'http://*',
-    'https://*',
     'http://localhost:3000',
-    'https://localhost:3000',
-    'http://localhost:*',
-    'https://localhost:*',
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
+    'DELETE',
     'GET',
+    'OPTIONS',
+    'PATCH',
     'POST',
     'PUT',
-    'DELETE',
-    'OPTIONS',
 ]
 CORS_ALLOW_HEADERS = [
-    'Accept',
-    'Authorization',
-    'Content-Type',
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 

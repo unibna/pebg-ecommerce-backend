@@ -26,6 +26,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     authentication_classes = (JWTAuthentication,)
     lookup_field = 'pk'
+    
+    def options(self, request, *args, **kwargs):
+        response = super().options(request, *args, **kwargs)
+        return response
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update']:
@@ -39,7 +43,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         ).first()
         categories = Category.objects.filter(
             department=user_department.department.id
-        ) if user_department else Category.objects.none()
+        ).order_by('-id') if user_department else Category.objects.none()
         return categories
 
     def get_serializer_class(self):
@@ -76,9 +80,9 @@ class ProductViewSet(viewsets.ModelViewSet):
             ).first()
             return Product.objects.filter(
                 category__department=user_department.department.id
-            ) if user_department else Product.objects.none()
+            ).order_by('-id') if user_department else Product.objects.none()
         else:
-            return Product.objects.filter(is_enabled=True)
+            return Product.objects.filter(is_enabled=True).order_by('-id')
         
     def get_permissions(self):
         if self.request.user.is_staff:
