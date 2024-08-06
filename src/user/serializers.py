@@ -146,6 +146,7 @@ class MeSerializer(serializers.ModelSerializer):
     def get_membership(self, obj):
         try:
             user_membership = obj.membership.get()
-            return MembershipSerializer(user_membership.membership).data
+            if user_membership.membership:
+                return MembershipSerializer(user_membership.membership).data
         except UserMembership.DoesNotExist:
             return None
