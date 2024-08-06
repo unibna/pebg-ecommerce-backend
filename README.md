@@ -8,6 +8,16 @@
 ## Run project
 ### Local
 
+- Install requirements
+```
+    # At root directory
+    python -m venv venv
+    source ./venv/bin/activee
+
+    # At ./src
+    pip install -r requirements.txt
+```
+
 - Migrate database
 ```
     # At ./src
