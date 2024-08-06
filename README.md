@@ -1,5 +1,8 @@
 # Pegb E-commerce
 
+## Frontend
+https://github.com/unibna/pegb-ecommerce-frontend
+
 ## Requirements
 - Python 3.11.8
 - PostgreSQL
