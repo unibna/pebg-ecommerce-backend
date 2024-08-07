@@ -138,6 +138,7 @@ class UserMembershipSerializer(serializers.ModelSerializer):
 
 class MeSerializer(serializers.ModelSerializer):
     membership = serializers.SerializerMethodField(read_only=True)
+    department = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -150,3 +151,17 @@ class MeSerializer(serializers.ModelSerializer):
                 return MembershipSerializer(user_membership.membership).data
         except UserMembership.DoesNotExist:
             return None
+
+    def get_department(self, obj):
+        try:
+            user_department = UserDepartment.objects.filter(
+                user=obj,
+                is_enabled=True
+            ).first()
+            if not user_department:
+                return None
+            if user_department.department:
+                return user_department.department.id
+        except UserDepartment.DoesNotExist:
+            return None
+    
