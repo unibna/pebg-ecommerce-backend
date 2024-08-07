@@ -25,7 +25,7 @@ def create_user_membership_for_new_user(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def send_activation_email(sender, instance, created, **kwargs):
     if created:
-        activation_link = f"http://localhost:8000/api/activate/?token={instance.activation_token}"
+        activation_link = f"http://localhost:3000/auth/activate/?activation_token={instance.activation_token}"
         subject = 'Activate your account'
         message = f'Hi {instance.email},\n\nPlease click the link below to activate your account:\n{activation_link}\n\nThank you!'
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [instance.email])
