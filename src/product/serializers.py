@@ -60,6 +60,19 @@ class ProductSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         product = Product.objects.create(**validated_data)
         return product
+    
+    
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+        }
+        
+    def create(self, validated_data):
+        product = Product.objects.create(**validated_data)
+        return product
 
 
 class ProductUpdateSerializer(serializers.ModelSerializer):

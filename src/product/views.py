@@ -98,9 +98,10 @@ class ProductViewSet(viewsets.ModelViewSet):
         return ProductSerializer
 
     def perform_create(self, serializer):
+        category = serializer.validated_data['category']
         if not UserDepartment.objects.filter(
             user=self.request.user,
-            department=serializer.validated_data['category'].department,
+            department=category.department,
             is_enabled=True
         ).exists():
             raise PermissionDenied()
